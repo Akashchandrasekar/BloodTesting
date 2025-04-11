@@ -1,0 +1,62 @@
+﻿<!-- Load jQuery first -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+<!-- Load DataTables CSS and JS (compatible with jQuery 3.6+) -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+
+<table id="testsTable" class="display">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Code</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Fasting</th>
+        </tr>
+    </thead>
+</table>
+
+<script>
+    $(document).ready(function () {
+        $('#testsTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: function (data, callback) {
+                const sort = data.order[0];
+                const sortBy = data.columns[sort.column].data;
+                const sortDir = sort.dir;
+
+                $.getJSON('/api/MedicalTests', {
+                    page: data.start / data.length + 1,
+                    pageSize: data.length,
+                    sortBy: sortBy,
+                    sortDir: sortDir
+                }, function (response) {
+                    callback({
+                        recordsTotal: response.total,
+                        recordsFiltered: response.total,
+                        data: response.data
+                    });
+                });
+            },
+            columns: [
+                { data: 'Name' },
+                { data: 'CategoryId' },
+                { data: 'Code' },
+                { data: 'Type' },
+                { data: 'Description' },
+                {
+                    data: 'FastingRequired',
+                    render: function (data) {
+                        return data ? 'Yes' : 'No';
+                    }
+                }
+            ]
+        });
+    });
+</script>
